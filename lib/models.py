@@ -3,7 +3,7 @@ from keras.utils.np_utils import to_categorical
 from keras.layers import Dense, Conv2D, Flatten, AvgPool2D, BatchNormalization, Activation, Input, Concatenate, AveragePooling2D, Dropout
 from keras.models import Model
 from keras.callbacks import LearningRateScheduler
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, r2_score
 from lib.Utilities import *
 
 # The Holoblock structure ==============================================================================================
@@ -46,6 +46,32 @@ def HoloNet_model(IMG_SHAPE):
     # output_r = Dense(2, activation='relu', name='Regression')(RU_d_2)
 
     model = Model(inputs=img_inputs, outputs=output_c)
+
+    print(model.summary())
+    # plot_model(model, "Dual_HoloNet_model.png")
+
+    return model
+
+def HoloNet_model_r(IMG_SHAPE):
+    img_inputs = Input(shape=IMG_SHAPE, name='Input')
+    conv_1 = Conv2D(64, (3, 3), padding='same', name='Conv1')(img_inputs)
+    BN_1 = BatchNormalization(name='BN_1')(conv_1)
+    RU_1 = Activation('relu', name='RU_1')(BN_1)
+
+    RU_2 = Holo_Block(img_inputs, RU_1, 16, 128, 1)
+    RU_3 = Holo_Block(img_inputs, RU_2, 24, 256, 2)
+    RU_4 = Holo_Block(img_inputs, RU_3, 32, 512, 3)
+
+    flatten = Flatten(name='Flat')(RU_4)
+    dense_1 = Dense(128, name='Dense_1')(flatten)
+    BN_d_1 = BatchNormalization(name='BN_dense_1')(dense_1)
+    RU_d_1 = Activation('relu', name='RU_dense_1')(BN_d_1)
+    dense_2 = Dense(64, name='Dense_2')(RU_d_1)
+    BN_d_2 = BatchNormalization(name='BN_dense_2')(dense_2)
+    RU_d_2 = Activation('relu', name='RU_dense_2')(BN_d_2)
+    output_r = Dense(1, activation='relu', name='Regression')(RU_d_2)
+
+    model = Model(inputs=img_inputs, outputs=output_r)
 
     print(model.summary())
     # plot_model(model, "Dual_HoloNet_model.png")
@@ -101,9 +127,9 @@ def MLP(IMG_SHAPE):
 
     return model
 
-# Training HoloNet model and predict the results if report_sign is True ================================================
+# Training HoloNet model for classification and predict the results if report_sign is True =============================
 def Holo_Model_Training(path, report_sign):
-    trainX, y_train, testX, y_test, _, _, _ = data_collection(path)
+    trainX, y_train, testX, y_test, _, _, _, _ = data_collection(path)
 
     # Convert HWCN to NHWC and Normalize
     X_train = np.transpose(trainX, [3, 0, 1, 2])
@@ -125,7 +151,6 @@ def Holo_Model_Training(path, report_sign):
     kF = KFold(n_splits=5, shuffle=True)
 
     for train_index, val_index in kF.split(X_train, y_train):
-
         # Create and train model
         FF_holoNet = HoloNet_model((64, 64, 2))
         # Compile model using accuracy to measure model performance
@@ -156,12 +181,121 @@ def Holo_Model_Training(path, report_sign):
         FF_holoNet.save('Model_Save/HoloNet_Classification.h5')
 
         print(Test_Acc)
-        print('mean :', np.mean(Test_Acc))
-        print('std:', np.std(Test_Acc))
+        print('Accuracy (mean):', np.mean(Test_Acc))
+        print('Accuracy (std):', np.std(Test_Acc))
+
+# Training HoloNet model for regression
+def Holo_Model_Regression_Training(path, report_sign):
+    X_train, _, X_test, _, Y_train, Y_test, _, _ = data_collection(path)
+
+    # Convert HWCN to NHWC and Normalize
+    X_train = np.transpose(X_train, [3, 0, 1, 2])
+    X_train = X_train / 65535
+
+    X_test = np.transpose(X_test, [3, 0, 1, 2])
+    X_test = X_test / 65535
+
+    # Callback Setting (if the user want to change the parameters, please check Utilities.py
+    lrate = LearningRateScheduler(step_decay)
+
+    # 5-fold vailation
+    kF = KFold(n_splits=5, shuffle=True)
+
+    # 470 ==========================
+
+    # Intensity in different channels
+    x_train = X_train[:, :, :, 0]
+    x_test = X_test[:, :, :, 0]
+
+    x_train = x_train[:, :, :, np.newaxis]
+    x_test = x_test[:, :, :, np.newaxis]
+
+    y_train = Y_train[:, 0]
+    y_test = Y_test[:, 0]
+
+    Test_regression_470 = []
+
+    for train_index, val_index in kF.split(x_train, y_train):
+        # Create and train model
+        FF_holoNet_r = HoloNet_model_r((64, 64, 1))
+        # Compile model using accuracy to measure model performance
+        FF_holoNet_r.compile(optimizer='adam', loss='mse', metrics=['mse'])
+
+        # split training and validation datasets
+        X_train_split = x_train[train_index, :, :, :]
+        X_val = x_train[val_index, :, :, :]
+        y_train_split = y_train[train_index]
+        y_val = y_train[val_index]
+
+        # train the model
+        History = FF_holoNet_r.fit(X_train_split,
+                                   y_train_split,
+                                   batch_size=128,
+                                   epochs=100,
+                                   callbacks=[lrate],
+                                   validation_data=[X_val, y_val],
+                                   verbose=1)
+
+        # summarize history for accuracy
+        y_pred_r = FF_holoNet_r.predict(x_test)
+        test_reg = r2_score(y_test, y_pred_r)
+        Test_regression_470.append(test_reg)
+
+    if report_sign:
+        FF_holoNet_r.save('Model_Save/HoloNet_Regression_470.h5')
+
+        print(Test_regression_470)
+        print('R2 (mean) in 470 nm:', np.mean(Test_regression_470))
+        print('R2 (std) in 470 nm:', np.std(Test_regression_470))
+
+    # 625 ===========
+    x_train = X_train[:, :, :, 1]
+    x_test = X_test[:, :, :, 1]
+
+    x_train = x_train[:, :, :, np.newaxis]
+    x_test = x_test[:, :, :, np.newaxis]
+
+    y_train = Y_train[:, 1]
+    y_test = Y_test[:, 1]
+
+    Test_regression_625 = []
+
+    for train_index, val_index in kF.split(x_train, y_train):
+        # Create and train model
+        FF_holoNet_r = HoloNet_model_r((64, 64, 1))
+        # Compile model using accuracy to measure model performance
+        FF_holoNet_r.compile(optimizer='adam', loss='mse', metrics=['mse'])
+
+        # split training and validation datasets
+        X_train_split = x_train[train_index, :, :, :]
+        X_val = x_train[val_index, :, :, :]
+        y_train_split = y_train[train_index]
+        y_val = y_train[val_index]
+
+        # train the model
+        History = FF_holoNet_r.fit(X_train_split,
+                                   y_train_split,
+                                   batch_size=128,
+                                   epochs=100,
+                                   callbacks=[lrate],
+                                   validation_data=[X_val, y_val],
+                                   verbose=1)
+
+        # summarize history for accuracy
+        y_pred_r = FF_holoNet_r.predict(x_test)
+        test_reg = r2_score(y_test, y_pred_r)
+        Test_regression_625.append(test_reg)
+
+        if report_sign:
+            FF_holoNet_r.save('Model_Save/HoloNet_Regression_625.h5')
+
+            print(Test_regression_625)
+            print('R2 (mean) in 625 nm:', np.mean(Test_regression_625))
+            print('R2 (std) in 625 nm:', np.std(Test_regression_625))
 
 # Training Multi-Task HoloNet model and predict the results if report_sign is True =====================================
 def MT_Holo_Model_Training(path, report_sign):
-    X_train, Y_train, X_test, Y_test, y_train_Int, All_X_Data, cellLine_label = data_collection(path)
+    X_train, Y_train, X_test, Y_test, y_train_Int, _, All_X_Data, cellLine_label = data_collection(path)
 
     # Convert HWCN to NHWC and Normalize
     X_train = np.transpose(X_train, [3, 0, 1, 2])
@@ -194,7 +328,7 @@ def MT_Holo_Model_Training(path, report_sign):
                                    verbose=1)
 
     if report_sign:
-        MT_HoloNet_Model.save('Model_Save/FF_HoloNet_Model.h5')
+        MT_HoloNet_Model.save('Model_Save/MT_HoloNet_Model.h5')
 
     return MT_HoloNet_Model, All_X_Data, cellLine_label
 
@@ -245,7 +379,7 @@ def Trans_Holo_Model(path, report_sign):
         Test_Acc.append(test_acc)
 
     if report_sign:
-        MLP_MT_holoNet.save('Model_Save/MLP_FF_HoloNet_Model.h5')
+        MLP_MT_holoNet.save('Model_Save/MLP_MT_HoloNet_Model.h5')
 
         print(Test_Acc)
         print('mean :', np.max(Test_Acc))
@@ -257,15 +391,22 @@ def main(path, **kwargs):
         path: the data path
         kwargs:
             Model_Type: String, select the 'HoloNet' model or 'Trans-HoloNet' model, default='HoloNet'
+            Working_Task : Integer, for HoloNet only. 0 is classification and 1 is regression, default=0
             report_sign: Integer, show the accuracy results and save the model, default=False
 
     Return: The accuracy results if report_sign is True
 
     """
     Model_Type = kwargs.get('Model_Type', 'HoloNet')
+    Working_Task = kwargs.get('Working_Task', 0)
     report_sign = kwargs.get('report_sign', False)
 
     if Model_Type == 'HoloNet':
-        Holo_Model_Training(path, report_sign)
+        if Working_Task != 0:
+            Holo_Model_Regression_Training(path, report_sign)
+        else:
+            Holo_Model_Training(path, report_sign)
     elif Model_Type == 'Trans_HoloNet':
         Trans_Holo_Model(path, report_sign)
+    else:
+        print('Invalid input. Please read the instructions. Thanks!!!')

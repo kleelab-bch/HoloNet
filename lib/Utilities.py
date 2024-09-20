@@ -24,6 +24,8 @@ def data_collection(path):
    All_Y_Data = all_data['Y_Data']
    All_Y_Data_Int = all_data['Y_Data_Int']
    All_Y_Data = np.squeeze(All_Y_Data)
+   cellLine_label = all_data['cellLine_Label']
+   cellLine_label = np.squeeze(cellLine_label)
 
    random_ind = np.arange(All_X_Data.shape[3])
    random.shuffle(random_ind)
@@ -34,9 +36,7 @@ def data_collection(path):
    X_test = All_X_Data[:, :, :, random_ind[round(0.8 * All_X_Data.shape[3]):]]
    Y_test = All_Y_Data[random_ind[round(0.8 * All_X_Data.shape[3]):]]
 
-   y_train_Int = All_Y_Data_Int[random_ind[:round(0.8 * All_X_Data.shape[3])], :]
+   Y_train_Int = All_Y_Data_Int[random_ind[:round(0.8 * All_X_Data.shape[3])], :]
+   Y_test_Int = All_Y_Data_Int[random_ind[round(0.8 * All_X_Data.shape[3]):], :]
 
-   cellLine_label = all_data['cellLine_Label']
-   cellLine_label = np.squeeze(cellLine_label)
-
-   return X_train, Y_train, X_test, Y_test, y_train_Int, All_X_Data, cellLine_label
+   return X_train, Y_train, X_test, Y_test, Y_train_Int, Y_test_Int, All_X_Data, cellLine_label

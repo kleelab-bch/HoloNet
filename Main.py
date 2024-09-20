@@ -17,6 +17,7 @@ all_data_path = 'Data/All_Data.mat'
 # There are three parameters --- path, Model_Type, and report_sign:
 #       'path' is necessary to be provided for data reading
 #       'Model_Type' includes two models: 'HoloNet' (default) and 'Trans_HoloNet'
+#       'Working_Task' only for HoloNet. It includes Classification (0) and Regression (1). The default is 0.
 #       'report_sign' is to save the model and print the results(True) or not(False). The default is False.
 #
 
