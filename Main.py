@@ -21,7 +21,7 @@ all_data_path = 'Data/All_Data.mat'
 #
 
 if __name__ == "__main__":
-    main(all_data_path, Model_Type='Trans_HoloNet', report_sign=True)
+    main(all_data_path)
 
 
 
