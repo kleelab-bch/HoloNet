@@ -3,7 +3,7 @@
 Tzu-Hsi Song, Mengzhi Cao, Jouha Min, Hyungsoon Im, Hakho Lee, Kwonmoo Lee
 
 ## Architecture
-<img src="/assets/Fig1.png" width=500>
+<img src="/assets/Fig1.png" width=300>
 Lens-free digital in-line holography (LDIH) offers a large field of view on the scale of 10 mm² at micrometer-scale resolution, capabilities not achievable with traditional lens-based microscopes. This makes LDIH a promising diagnostic tool for high-throughput cellular analysis. However, the complex nature of diffraction images (holograms) produced by LDIH poses challenges for human interpretation. To address these challenges, we present HoloNet, a novel deep learning architecture specifically designed for the direct analysis of diffraction images for cellular diagnosis. It effectively classifies breast cancer cell types and quantifies molecular marker intensities with high precision and interpretability. HoloNet offers a robust solution to the unique challenges of holographic data analysis, enhancing both the accuracy and interpretability of cellular diagnostics by seamlessly integrating computational imaging and deep learning.
 
 ## Installation
@@ -17,9 +17,9 @@ pip install -r requirements.txt
 
     ``git clone https://github.com/kleelab-bch/HoloNet``
 
-* Prepare the dataset as mat file and copy to the ``Data`` folder. 
+* Prepare the dataset as mat file and copy to the ``Data`` folder (if not exist, please create it.). 
 * Follow the order of codes
-  * Run ``main.py`` to get the model and prediction results.
+  * Run ``main.py`` to get the model and prediction results for classification or regression.
     * Please read the instructions in ``main.py`` to swtich different models. 
 * The results will be printed on the terminal. 
 
