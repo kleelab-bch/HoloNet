@@ -20,14 +20,15 @@ pip install -r requirements.txt
 
     ``git clone https://github.com/kleelab-bch/HoloNet``
 
-* Prepare the dataset as mat file and copy to the ``Data`` folder (if not exist, please create it.). 
+* Prepare the dataset as mat file and copy to the ``Data`` folder.
+  * The training data has been uploaded. Please unzip the Hologram_Image_data file to access the data.
+  * If the user wants to use their own data, please put it in the ``Data`` folder.     
 * Follow the order of codes
   * Run ``main.py`` to get the model and prediction results for classification or regression.
     * Please read the instructions in ``main.py`` to swtich different models. 
 * The results will be printed on the terminal. 
 
 ## Note
-- The data for model training is included in the ``Data`` foler. Please unzip the Hologram_Image_data to get the data.
 - The training data information is included in the All_data_Info file. 
 - The data is saved as mat format. If the user wnats to change it, the data collection function is in the Utilities.py
 - The ``lib`` folder includes all dependencies required for the HoloNet and related models.
