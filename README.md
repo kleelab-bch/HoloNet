@@ -29,6 +29,7 @@ pip install -r requirements.txt
 * The results will be printed on the terminal. 
 
 ## Note
+- The image data consists of two channels (470 nm and 625 nm).
 - The training data information is included in the All_data_Info file. 
 - The data is saved as mat format. If the user wnats to change it, the data collection function is in the Utilities.py
 - The ``lib`` folder includes all dependencies required for the HoloNet and related models.
