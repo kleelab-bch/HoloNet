@@ -27,7 +27,9 @@ pip install -r requirements.txt
 * The results will be printed on the terminal. 
 
 ## Note
-- The data is saved as mat format. If the user wnats to change it, the data collection function is in the Utilities.py  
+- The data for model training is included in the ``Data`` foler. Please unzip the Hologram_Image_data to get the data.
+- The training data information is included in the All_data_Info file. 
+- The data is saved as mat format. If the user wnats to change it, the data collection function is in the Utilities.py
 - The ``lib`` folder includes all dependencies required for the HoloNet and related models.
 - All trained models are saved to the ``Model_Save`` folder.
 
