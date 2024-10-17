@@ -20,9 +20,9 @@ def brier_multi(targets, probs):
 # Collect the data (from the mat file)
 def data_collection(path):
    all_data = loadmat(path)
-   All_X_Data = all_data['X_Data']
-   All_Y_Data = all_data['Y_Data']
-   All_Y_Data_Int = all_data['Y_Data_Int']
+   All_X_Data = all_data['Image_data']
+   All_Y_Data = all_data['Cell_Type']
+   All_Y_Data_Int = all_data['Image_data_Int']
    All_Y_Data = np.squeeze(All_Y_Data)
    cellLine_label = all_data['cellLine_Label']
    cellLine_label = np.squeeze(cellLine_label)
