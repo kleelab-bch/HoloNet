@@ -21,7 +21,7 @@ pip install -r requirements.txt
     ``git clone https://github.com/kleelab-bch/HoloNet``
 
 * Prepare the dataset as mat file and copy to the ``Data`` folder.
-  * The training data has been uploaded. Please unzip the All_data file to access the data.
+  * The training data has been uploaded. Please unzip the All_Data file to access the data.
   * If the user wants to use their own data, please put it in the ``Data`` folder.     
 * Follow the order of codes
   * Run ``main.py`` to get the model and prediction results for classification or regression.
@@ -30,7 +30,7 @@ pip install -r requirements.txt
 
 ## Note
 - The image data consists of two channels (470 nm and 625 nm).
-- The training data information (cell types and cell lines) is included in the All_data file. The order related to cells is the same as in this article.    
+- The training data information (cell types and cell lines) is included in the All_Data file. The order related to cells is the same as in this article.    
 - The data is saved as mat format. If the user wnats to change it, the data collection function is in the Utilities.py
 - The ``lib`` folder includes all dependencies required for the HoloNet and related models.
 - All trained models are saved to the ``Model_Save`` folder.
